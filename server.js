@@ -4,34 +4,30 @@ const axios = require('axios');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const FormData = require('form-data'); // <- Necesario para Whisper
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Configurar almacenamiento temporal para audio
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
 
-// Ruta para HTML en navegador
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Ruta principal para manejar audio grabado
 app.post('/api/audio', upload.single('audio'), async (req, res) => {
-  const voiceId = 'hYYNmijq0aL07R8FAKj1'; // tu voz personalizada
+  const voiceId = 'hYYNmijq0aL07R8FAKj1';
   const audioBuffer = req.file?.buffer;
 
   if (!audioBuffer) {
@@ -39,18 +35,22 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
   }
 
   try {
-    // 1. Transcribir con Whisper
+    // 🧠 Transcripción con Whisper usando form-data
+    const formData = new FormData();
+    formData.append('file', audioBuffer, {
+      filename: 'audio.webm',
+      contentType: 'audio/webm',
+    });
+    formData.append('model', 'whisper-1');
+    formData.append('response_format', 'json');
+
     const whisperResp = await axios.post(
       'https://api.openai.com/v1/audio/transcriptions',
-      {
-        file: audioBuffer,
-        model: 'whisper-1',
-        response_format: 'json',
-      },
+      formData,
       {
         headers: {
+          ...formData.getHeaders(),
           'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'multipart/form-data',
         },
       }
     );
@@ -58,7 +58,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     const transcripcion = whisperResp.data.text;
     console.log('📝 Transcripción:', transcripcion);
 
-    // 2. Obtener respuesta de GPT
+    // 🤖 GPT-3.5
     const chatResp = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
@@ -76,7 +76,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     const respuestaTexto = chatResp.data.choices[0].message.content;
     console.log('🤖 GPT respondió:', respuestaTexto);
 
-    // 3. Guardar en Supabase
+    // 💾 Guardar en Supabase
     await supabase.from('memoria').insert([
       {
         user_id: 'default',
@@ -85,7 +85,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       },
     ]);
 
-    // 4. Generar audio con ElevenLabs
+    // 🔊 Generar audio con ElevenLabs
     const audioResp = await axios({
       method: 'POST',
       url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
