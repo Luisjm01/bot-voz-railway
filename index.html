@@ -18,7 +18,7 @@
 
     <button id="grabarBtn">🎙️ Hablar</button>
 
-    <div class="status" id="estado"> </div>
+    <div class="status" id="estado"></div>
 
     <h3>Respuesta del bot:</h3>
     <audio id="respuestaAudio" controls></audio>
@@ -31,9 +31,21 @@
 
     let mediaRecorder;
     let audioChunks = [];
+    let grabando = false;
+    let tiempoLimite;
 
     grabarBtn.addEventListener("click", async () => {
+      if (grabando) {
+        mediaRecorder.stop();
+        grabando = false;
+        grabarBtn.textContent = "🎙️ Hablar";
+        clearTimeout(tiempoLimite);
+        return;
+      }
+
+      grabando = true;
       grabarBtn.disabled = true;
+      grabarBtn.textContent = "⏹️ Detener";
       estado.textContent = "🎙️ Grabando... habla ahora";
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -63,23 +75,26 @@
             respuestaAudio.src = data.audioUrl;
             estado.textContent = "✅ Respuesta generada";
           } else {
-            estado.textContent = "❌ Error: no se recibió respuesta de audio.";
+            estado.textContent = "❌ No se recibió audio del bot.";
           }
         } catch (err) {
           console.error(err);
           estado.textContent = "❌ Error al procesar el audio.";
         }
 
+        grabando = false;
         grabarBtn.disabled = false;
+        grabarBtn.textContent = "🎙️ Hablar";
       };
 
       mediaRecorder.start();
 
-      setTimeout(() => {
+      // Detener automáticamente después de 8 segundos si no se detuvo manualmente
+      tiempoLimite = setTimeout(() => {
         if (mediaRecorder.state === "recording") {
           mediaRecorder.stop();
         }
-      }, 8000); // Máximo 8 segundos de grabación
+      }, 8000);
     });
   </script>
 </body>
