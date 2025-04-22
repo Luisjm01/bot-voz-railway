@@ -4,6 +4,7 @@ const axios = require('axios');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const FormData = require('form-data');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
@@ -34,17 +35,21 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
   }
 
   try {
+    const formData = new FormData();
+    formData.append('file', audioBuffer, {
+      filename: 'audio.webm',
+      contentType: req.file.mimetype || 'audio/webm',
+    });
+    formData.append('model', 'whisper-1');
+    formData.append('response_format', 'json');
+
     const whisperResp = await axios.post(
       'https://api.openai.com/v1/audio/transcriptions',
-      {
-        file: audioBuffer,
-        model: 'whisper-1',
-        response_format: 'json',
-      },
+      formData,
       {
         headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'multipart/form-data',
+          ...formData.getHeaders(),
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
         },
       }
     );
