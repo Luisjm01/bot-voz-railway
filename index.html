@@ -1,110 +1,86 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bot de Voz Mejorado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🤖 Bot de Voz</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
     <h1>🤖 Bot de Voz</h1>
-    <p>Presiona "Grabar", habla y espera la respuesta hablada del bot. Puedes detener manualmente o dejar que se detenga solo.</p>
+    <p>Presiona el botón y habla. El bot responderá con voz.</p>
 
-    <div class="controls">
-      <button id="startBtn">🎙️ Grabar</button>
-      <button id="stopBtn" style="display: none;">⏹️ Detener</button>
-    </div>
+    <label for="voz">Selecciona voz:</label>
+    <select id="voz">
+      <option value="clonada" selected>🧠 Mi voz clonada</option>
+    </select>
 
-    <div id="mensajeEstado"></div>
-    <audio id="audio" controls style="margin-top: 20px;"></audio>
+    <button id="grabarBtn">🎙️ Hablar</button>
+
+    <div class="status" id="estado"> </div>
+
+    <h3>Respuesta del bot:</h3>
+    <audio id="respuestaAudio" controls></audio>
   </div>
 
   <script>
+    const grabarBtn = document.getElementById("grabarBtn");
+    const estado = document.getElementById("estado");
+    const respuestaAudio = document.getElementById("respuestaAudio");
+
     let mediaRecorder;
     let audioChunks = [];
-    let silenceTimer;
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const estado = document.getElementById("mensajeEstado");
 
-    async function startRecording() {
+    grabarBtn.addEventListener("click", async () => {
+      grabarBtn.disabled = true;
+      estado.textContent = "🎙️ Grabando... habla ahora";
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
 
       mediaRecorder.ondataavailable = event => {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data);
-        }
+        audioChunks.push(event.data);
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        estado.textContent = "⏳ Procesando... por favor espera";
+
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
         const formData = new FormData();
-        formData.append('audio', audioBlob, 'grabacion.webm');
+        formData.append("audio", audioBlob, "grabacion.webm");
 
-        estado.innerText = "⏳ Procesando respuesta...";
+        try {
+          const resp = await fetch("/api/audio", {
+            method: "POST",
+            body: formData,
+          });
 
-        const respuesta = await fetch('/api/audio', {
-          method: 'POST',
-          body: formData
-        });
+          const data = await resp.json();
 
-        const data = await respuesta.json();
-        if (data.audioUrl) {
-          document.getElementById("audio").src = data.audioUrl;
-          estado.innerText = "✅ Reproduciendo respuesta:";
-        } else {
-          estado.innerText = "❌ Error al procesar audio.";
+          if (data.audioUrl) {
+            respuestaAudio.src = data.audioUrl;
+            estado.textContent = "✅ Respuesta generada";
+          } else {
+            estado.textContent = "❌ Error: no se recibió respuesta de audio.";
+          }
+        } catch (err) {
+          console.error(err);
+          estado.textContent = "❌ Error al procesar el audio.";
         }
 
-        startBtn.disabled = false;
-        stopBtn.style.display = "none";
+        grabarBtn.disabled = false;
       };
 
       mediaRecorder.start();
-      estado.innerText = "🎤 Grabando...";
 
-      // auto-stop después de 3 segundos de silencio
-      const audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(stream);
-      const analyser = audioContext.createAnalyser();
-      source.connect(analyser);
-      const data = new Uint8Array(analyser.frequencyBinCount);
-
-      function detectSilence() {
-        analyser.getByteFrequencyData(data);
-        const volume = data.reduce((a, b) => a + b) / data.length;
-        if (volume < 5) {
-          if (!silenceTimer) {
-            silenceTimer = setTimeout(() => {
-              stopRecording();
-            }, 3000);
-          }
-        } else {
-          clearTimeout(silenceTimer);
-          silenceTimer = null;
+      setTimeout(() => {
+        if (mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
         }
-        requestAnimationFrame(detectSilence);
-      }
-
-      detectSilence();
-      startBtn.disabled = true;
-      stopBtn.style.display = "inline-block";
-    }
-
-    function stopRecording() {
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-        stopBtn.style.display = "none";
-        estado.innerText = "🔄 Enviando grabación...";
-      }
-    }
-
-    startBtn.addEventListener("click", startRecording);
-    stopBtn.addEventListener("click", stopRecording);
+      }, 8000); // Máximo 8 segundos de grabación
+    });
   </script>
 </body>
 </html>
