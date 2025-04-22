@@ -1,7 +1,7 @@
 {
   "name": "bot-voz-railway",
   "version": "1.0.0",
-  "description": "Bot de voz con Whisper, GPT y ElevenLabs desplegado en Railway",
+  "description": "Bot de voz con OpenAI y ElevenLabs desplegado en Railway",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,8 +11,8 @@
     "axios": "^1.6.8",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "ffmpeg-static": "^5.1.0",
     "fluent-ffmpeg": "^2.1.2",
+    "ffmpeg-static": "^4.4.0",
     "multer": "^1.4.5-lts.1"
   }
 }

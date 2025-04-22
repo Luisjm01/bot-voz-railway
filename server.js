@@ -5,10 +5,8 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
-const ffmpegPath = require('ffmpeg-static');
 const ffmpeg = require('fluent-ffmpeg');
-
-// Setear ruta de ffmpeg
+const ffmpegPath = require('ffmpeg-static');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 const app = express();
@@ -18,7 +16,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Configurar almacenamiento temporal
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -39,42 +36,36 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     return res.status(400).json({ error: 'No se recibió el archivo de audio.' });
   }
 
-  const tempWebmPath = '/tmp/input.webm';
-  const tempMp3Path = '/tmp/output.mp3';
-  fs.writeFileSync(tempWebmPath, audioBuffer);
-
   try {
-    // Convertir webm → mp3 con ffmpeg
+    const tempInput = '/tmp/input.webm';
+    const tempOutput = '/tmp/output.mp3';
+    fs.writeFileSync(tempInput, audioBuffer);
+
     await new Promise((resolve, reject) => {
-      ffmpeg(tempWebmPath)
-        .audioCodec('libmp3lame')
+      ffmpeg(tempInput)
         .toFormat('mp3')
         .on('end', resolve)
         .on('error', reject)
-        .save(tempMp3Path);
+        .save(tempOutput);
     });
 
-    const mp3Data = fs.readFileSync(tempMp3Path);
-
-    // Enviar a Whisper
-    const formData = new FormData();
-    formData.append('file', mp3Data, { filename: 'audio.mp3', contentType: 'audio/mp3' });
-    formData.append('model', 'whisper-1');
-    formData.append('response_format', 'json');
-
+    const mp3Data = fs.readFileSync(tempOutput);
     const whisperResp = await axios.post(
       'https://api.openai.com/v1/audio/transcriptions',
-      formData,
+      mp3Data,
       {
         headers: {
           'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          ...formData.getHeaders(),
+          'Content-Type': 'audio/mp3',
+        },
+        params: {
+          model: 'whisper-1',
+          response_format: 'json',
         },
       }
     );
 
     const transcripcion = whisperResp.data.text;
-
     const chatResp = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
@@ -92,7 +83,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     const respuestaTexto = chatResp.data.choices[0].message.content;
 
     await supabase.from('memoria').insert([
-      { user_id: 'default', pregunta: transcripcion, respuesta: respuestaTexto },
+      { user_id: 'default', pregunta: transcripcion, respuesta: respuestaTexto }
     ]);
 
     const audioResp = await axios({
@@ -106,10 +97,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       data: {
         text: respuestaTexto,
         model_id: 'eleven_monolingual_v1',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.8
-        }
+        voice_settings: { stability: 0.5, similarity_boost: 0.8 }
       },
       responseType: 'arraybuffer'
     });
@@ -120,7 +108,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
 
     res.json({ audioUrl: `/${filename}` });
   } catch (error) {
-    console.error('❌ Error procesando audio:', error.message);
+    console.error('❌ Error procesando audio:', error.response?.data || error.message);
     res.status(500).json({ error: 'Ocurrió un error procesando tu audio.' });
   }
 });
