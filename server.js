@@ -39,20 +39,24 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
 
   try {
     console.log('🔁 Enviando audio a Whisper...');
-    const whisperResp = await axios.post(
-      'https://api.openai.com/v1/audio/transcriptions',
-      {
-        file: audioBuffer,
-        model: 'whisper-1',
-        response_format: 'json',
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
+    const whisperResp = const FormData = require('form-data');
+
+const formData = new FormData();
+formData.append('file', audioBuffer, 'audio.webm');
+formData.append('model', 'whisper-1');
+formData.append('response_format', 'json');
+
+const whisperResp = await axios.post(
+  'https://api.openai.com/v1/audio/transcriptions',
+  formData,
+  {
+    headers: {
+      ...formData.getHeaders(),
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+  }
+);
+
 
     const transcripcion = whisperResp.data.text;
     console.log('📝 Transcripción recibida:', transcripcion);
