@@ -9,15 +9,17 @@
 <body>
   <div class="container">
     <h1>🤖 Bot de Voz</h1>
-
-    <p>Presiona el botón y habla. El bot responderá con voz.</p>
+    <p>Presiona el botón para grabar. Puedes detener la grabación manualmente.</p>
 
     <select id="voz">
       <option value="hYYNmijq0aL07R8FAKj1">🧔 Mi voz clonada</option>
       <option value="EXAVITQu4vr4xnSDxMaL">🎙️ Antoni (voz masculina)</option>
     </select>
 
-    <button id="grabar">🎤 Hablar</button>
+    <div class="buttons">
+      <button id="grabar">🎤 Hablar</button>
+      <button id="detener" disabled>✋ Detener</button>
+    </div>
 
     <p id="estado"></p>
 
@@ -27,6 +29,7 @@
 
   <script>
     const grabarBtn = document.getElementById("grabar");
+    const detenerBtn = document.getElementById("detener");
     const estado = document.getElementById("estado");
     const audioRespuesta = document.getElementById("audioRespuesta");
     const voz = document.getElementById("voz");
@@ -35,10 +38,8 @@
     let audioChunks = [];
 
     grabarBtn.onclick = async () => {
-      if (!navigator.mediaDevices) {
-        alert("Este navegador no permite grabación de audio.");
-        return;
-      }
+      grabarBtn.disabled = true;
+      detenerBtn.disabled = false;
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
@@ -51,6 +52,8 @@
       };
 
       mediaRecorder.onstop = async () => {
+        grabarBtn.disabled = false;
+        detenerBtn.disabled = true;
         estado.textContent = "Procesando... por favor espera ⏳";
 
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -69,21 +72,23 @@
           const data = await res.json();
           audioRespuesta.src = data.audioUrl;
           audioRespuesta.play();
-          estado.textContent = "";
         } catch (err) {
           alert("Error al procesar el audio.");
           console.error(err);
-          estado.textContent = "";
         }
+
+        estado.textContent = "";
       };
 
       mediaRecorder.start();
       estado.textContent = "🎙️ Grabando... habla ahora";
+    };
 
-      setTimeout(() => {
+    detenerBtn.onclick = () => {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
         estado.textContent = "⏳ Procesando...";
-      }, 4000);
+      }
     };
   </script>
 </body>
