@@ -57,10 +57,9 @@
         estado.textContent = "Procesando... por favor espera ⏳";
 
         const mimeType = audioChunks[0].type || 'audio/webm';
-const audioBlob = new Blob(audioChunks, { type: mimeType });
-const formData = new FormData();
-formData.append("audio", audioBlob, "grabacion.webm");
-
+        const audioBlob = new Blob(audioChunks, { type: mimeType });
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "grabacion.webm");
         formData.append("voz", voz.value);
 
         try {
