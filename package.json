@@ -1,6 +1,7 @@
 {
   "name": "bot-voz-railway",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "Bot de voz con Express, OpenAI, ElevenLabs y Supabase",
   "main": "server.js",
   "scripts": {
