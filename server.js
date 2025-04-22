@@ -4,7 +4,6 @@ const axios = require('axios');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const FormData = require('form-data');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
@@ -36,10 +35,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
 
   try {
     const formData = new FormData();
-    formData.append('file', audioBuffer, {
-      filename: 'audio.webm',
-      contentType: req.file.mimetype || 'audio/webm',
-    });
+    formData.append('file', audioBuffer, 'audio.webm');
     formData.append('model', 'whisper-1');
     formData.append('response_format', 'json');
 
@@ -50,7 +46,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
         headers: {
           ...formData.getHeaders(),
           'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-        },
+        }
       }
     );
 
