@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🤖 Bot de Voz</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -10,91 +10,67 @@
   <div class="container">
     <h1>🤖 Bot de Voz</h1>
     <p>Presiona el botón y habla. El bot responderá con voz.</p>
-
-    <label for="voz">Selecciona voz:</label>
     <select id="voz">
-      <option value="clonada" selected>🧠 Mi voz clonada</option>
+      <option value="mi_voz">🗣️ Mi voz clonada</option>
     </select>
-
-    <button id="grabarBtn">🎙️ Hablar</button>
-
-    <div class="status" id="estado"></div>
-
+    <button id="btnHablar">🎙️ Hablar</button>
+    <p class="status" id="estado">Listo para hablar</p>
     <h3>Respuesta del bot:</h3>
-    <audio id="respuestaAudio" controls></audio>
+    <audio id="audioRespuesta" controls></audio>
   </div>
-
   <script>
-    const grabarBtn = document.getElementById("grabarBtn");
+    const btn = document.getElementById("btnHablar");
     const estado = document.getElementById("estado");
-    const respuestaAudio = document.getElementById("respuestaAudio");
-
+    const audio = document.getElementById("audioRespuesta");
+    let grabando = false;
     let mediaRecorder;
     let audioChunks = [];
-    let grabando = false;
-    let tiempoLimite;
 
-    grabarBtn.addEventListener("click", async () => {
-      if (grabando) {
-        mediaRecorder.stop();
-        grabando = false;
-        grabarBtn.textContent = "🎙️ Hablar";
-        clearTimeout(tiempoLimite);
-        return;
-      }
+    btn.addEventListener("click", async () => {
+      if (!grabando) {
+        grabando = true;
+        btn.textContent = "⏹️ Detener";
+        estado.textContent = "🎙️ Grabando... habla ahora";
 
-      grabando = true;
-      grabarBtn.disabled = true;
-      grabarBtn.textContent = "⏹️ Detener";
-      estado.textContent = "🎙️ Grabando... habla ahora";
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
+        mediaRecorder.start();
 
-      mediaRecorder.ondataavailable = event => {
-        audioChunks.push(event.data);
-      };
+        mediaRecorder.addEventListener("dataavailable", event => {
+          audioChunks.push(event.data);
+        });
 
-      mediaRecorder.onstop = async () => {
-        estado.textContent = "⏳ Procesando... por favor espera";
+        mediaRecorder.addEventListener("stop", async () => {
+          estado.textContent = "⏳ Procesando... por favor espera ⏳";
 
-        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-        const formData = new FormData();
-        formData.append("audio", audioBlob, "grabacion.webm");
+          const audioBlob = new Blob(audioChunks, { type: "audio/mp3" });
+          const formData = new FormData();
+          formData.append("audio", audioBlob, "grabacion.mp3");
 
-        try {
-          const resp = await fetch("/api/audio", {
+          const respuesta = await fetch("/api/audio", {
             method: "POST",
             body: formData,
           });
 
-          const data = await resp.json();
-
+          const data = await respuesta.json();
           if (data.audioUrl) {
-            respuestaAudio.src = data.audioUrl;
+            audio.src = data.audioUrl;
             estado.textContent = "✅ Respuesta generada";
           } else {
-            estado.textContent = "❌ No se recibió audio del bot.";
+            estado.textContent = "❌ Error al procesar el audio.";
           }
-        } catch (err) {
-          console.error(err);
-          estado.textContent = "❌ Error al procesar el audio.";
-        }
 
+          grabando = false;
+          btn.textContent = "🎙️ Hablar";
+          audioChunks = [];
+        });
+
+      } else {
         grabando = false;
-        grabarBtn.disabled = false;
-        grabarBtn.textContent = "🎙️ Hablar";
-      };
-
-      mediaRecorder.start();
-
-      // Detener automáticamente después de 8 segundos si no se detuvo manualmente
-      tiempoLimite = setTimeout(() => {
-        if (mediaRecorder.state === "recording") {
-          mediaRecorder.stop();
-        }
-      }, 8000);
+        mediaRecorder.stop();
+        btn.textContent = "🎙️ Hablar";
+      }
     });
   </script>
 </body>
