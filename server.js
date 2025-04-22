@@ -39,8 +39,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
 
   try {
     console.log('🔁 Enviando audio a Whisper...');
-    const whisperResp = const FormData = require('form-data');
-
+    const FormData = require('form-data');
 const formData = new FormData();
 formData.append('file', audioBuffer, 'audio.webm');
 formData.append('model', 'whisper-1');
