@@ -76,7 +76,7 @@ async function enviarAudio(blob) {
   const formData = new FormData();
   formData.append("audio", blob, "grabacion.wav");
 
-  agregarMensaje("🗣️ Grabación enviada...", "usuario");
+  document.getElementById("thinking").classList.remove("oculto");
 
   try {
     const response = await fetch("/api/audio", {
@@ -87,6 +87,7 @@ async function enviarAudio(blob) {
     const data = await response.json();
 
     if (data.transcripcion) agregarMensaje("🗣️ " + data.transcripcion, "usuario");
+    document.getElementById("thinking").classList.add("oculto");
     if (data.respuesta) agregarMensaje("🤖 " + data.respuesta, "bot");
 
     if (data.audioUrl) {
@@ -162,7 +163,7 @@ function encodeWAV(samples) {
 }
 
 
-// Mostrar aviso si el navegador es Safari o Chrome en iPhone
+// Mostrar aviso en iPhone
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && /Safari|CriOS/.test(navigator.userAgent);
 if (isIOS) {
   const aviso = document.getElementById("iosWarning");
