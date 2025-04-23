@@ -14,9 +14,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-const upload = multer({ storage: multer.memoryStorage() });
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -24,6 +28,7 @@ app.get('/', (req, res) => {
 
 app.post('/api/audio', upload.single('audio'), async (req, res) => {
   console.log("📥 POST /api/audio recibido");
+
   const voiceId = req.body.voz || 'hYYNmijq0aL07R8FAKj1';
   const audioBuffer = req.file?.buffer;
 
@@ -34,35 +39,49 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
   try {
     console.log("🔁 Enviando audio a Whisper...");
     const formData = new FormData();
-    formData.append('file', audioBuffer, 'audio.webm');
+    formData.append('file', audioBuffer, {
+      filename: 'grabacion.webm',
+      contentType: 'audio/webm'
+    });
     formData.append('model', 'whisper-1');
     formData.append('response_format', 'json');
 
-    const whisperResp = await axios.post('https://api.openai.com/v1/audio/transcriptions', formData, {
-      headers: {
-        ...formData.getHeaders(),
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+    const whisperResp = await axios.post(
+      'https://api.openai.com/v1/audio/transcriptions',
+      formData,
+      {
+        headers: {
+          ...formData.getHeaders(),
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        }
       }
-    });
+    );
 
     const transcripcion = whisperResp.data.text;
     console.log("📝 Transcripción recibida:", transcripcion);
 
     console.log("🤖 Solicitando respuesta a GPT...");
-    const chatResp = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: transcripcion }]
-    }, {
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+    const chatResp = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: transcripcion }]
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
       }
-    });
+    );
 
     const respuestaTexto = chatResp.data.choices[0].message.content;
     console.log("✅ Respuesta GPT:", respuestaTexto);
 
     console.log("💾 Guardando en Supabase...");
-    await supabase.from('memoria').insert([{ user_id: 'default', pregunta: transcripcion, respuesta: respuestaTexto }]);
+    await supabase.from('memoria').insert([
+      { user_id: 'default', pregunta: transcripcion, respuesta: respuestaTexto }
+    ]);
 
     console.log("🔊 Generando audio en ElevenLabs...");
     const audioResp = await axios({
@@ -76,7 +95,10 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       data: {
         text: respuestaTexto,
         model_id: 'eleven_monolingual_v1',
-        voice_settings: { stability: 0.5, similarity_boost: 0.8 }
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.8
+        }
       },
       responseType: 'arraybuffer'
     });
