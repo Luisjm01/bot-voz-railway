@@ -2,25 +2,32 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>🤖 Bot de Voz</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bot de Voz</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>🤖 Bot de Voz</h1>
-  <p>Presiona el botón para grabar. Puedes detener la grabación manualmente.</p>
-  <select id="voz">
-    <option value="hYYNmijq0aL07R8FAKj1">🥸 Mi voz clonada</option>
-  </select>
-  <div class="botones">
-    <button id="startBtn">🎤 Hablar</button>
-    <button id="stopBtn" disabled>✋ Detener</button>
-  </div>
-  <p id="status">Procesando... por favor espera ⏳</p>
-  <h3>Respuesta del bot:</h3>
-  <audio id="respuestaAudio" controls></audio>
+  <div class="container">
+    <h1>🤖 Bot de Voz</h1>
+    <p>Presiona el botón para grabar. Puedes detener la grabación manualmente.</p>
 
-  <script src="script.js"></script>
+    <select id="voz">
+      <option value="hYYNmijq0aL07R8FAKj1">🧔 Mi voz clonada</option>
+      <option value="EXAVITQu4vr4xnSDxMaL">🎙️ Antoni (voz masculina)</option>
+    </select>
+
+    <div class="buttons">
+      <button id="grabar">🎤 Hablar</button>
+      <button id="detener" disabled>✋ Detener</button>
+    </div>
+
+    <p id="estado"></p>
+
+    <h3>Respuesta del bot:</h3>
+    <audio id="audioRespuesta" controls></audio>
+  </div>
+
+  <script src="scripts.js"></script>
 </body>
 </html>
