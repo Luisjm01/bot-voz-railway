@@ -9,6 +9,9 @@ let hablando = false;
 let detenerSolicitado = false;
 
 btnHablar.onclick = async () => {
+  if (audioContext?.state === "suspended") {
+    await audioContext.resume(); // desbloquear audio en iOS
+  }
   hablando = true;
   detenerSolicitado = false;
   btnHablar.classList.add("oculto");
