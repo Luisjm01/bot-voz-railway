@@ -66,6 +66,10 @@ function detenerGrabacion() {
 }
 
 async function enviarAudio(blob) {
+  if (detenerSolicitado) {
+    console.log("🎤 Grabación ignorada porque se solicitó detener.");
+    return;
+  }
   const formData = new FormData();
   formData.append("audio", blob, "grabacion.wav");
 
