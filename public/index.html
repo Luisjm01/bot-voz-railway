@@ -1,16 +1,18 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bot de Voz con Detección de Silencio</title>
+  <title>Bot de Voz</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
     <h1>🤖 Bot de Voz</h1>
-    <div id="chat"></div>
-    <button id="botonPrincipal">🎙 Hablar</button>
+    <div id="iosWarning" class="warning oculto">🔈 En iPhone, presiona el botón ▶️ para escuchar la primera respuesta.</div>
+    <div id="chat" class="chatbox"></div>
+    <button id="botonPrincipal" class="main-button">🎙 Hablar</button>
     <button id="detener" class="secundario oculto">⏹ Detener</button>
     <audio id="audioRespuesta" class="oculto" controls></audio>
   </div>

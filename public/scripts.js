@@ -160,3 +160,11 @@ function encodeWAV(samples) {
 
   return new Blob([view], { type: "audio/wav" });
 }
+
+
+// Mostrar aviso si el navegador es Safari o Chrome en iPhone
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && /Safari|CriOS/.test(navigator.userAgent);
+if (isIOS) {
+  const aviso = document.getElementById("iosWarning");
+  if (aviso) aviso.classList.remove("oculto");
+}
