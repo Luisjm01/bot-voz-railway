@@ -5,11 +5,10 @@ const axios = require('axios');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const FormData = require('form-data');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
@@ -36,23 +35,19 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
   }
 
   try {
-    const formData = new FormData();
-    formData.append('file', audioBuffer, 'audio.webm');
-    formData.append('model', 'whisper-1');
-    formData.append('response_format', 'json');
-
     const whisperResp = await axios.post(
       'https://api.openai.com/v1/audio/transcriptions',
-      formData,
+      audioBuffer,
       {
         headers: {
-          ...formData.getHeaders(),
           'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'audio/webm',
         },
       }
     );
 
     const transcripcion = whisperResp.data.text;
+    console.log('📝 Transcripción:', transcripcion);
 
     const chatResp = await axios.post(
       'https://api.openai.com/v1/chat/completions',
@@ -69,6 +64,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     );
 
     const respuestaTexto = chatResp.data.choices[0].message.content;
+    console.log('🤖 GPT respondió:', respuestaTexto);
 
     await supabase.from('memoria').insert([
       {
