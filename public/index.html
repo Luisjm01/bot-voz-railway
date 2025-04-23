@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bot de Voz</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
@@ -43,21 +43,16 @@
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.stream = stream;
       audioChunks = [];
 
       mediaRecorder.ondataavailable = event => {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data);
-        }
+        if (event.data.size > 0) audioChunks.push(event.data);
       };
 
       mediaRecorder.onstop = async () => {
         grabarBtn.disabled = false;
         detenerBtn.disabled = true;
-        estado.textContent = "Procesando... por favor espera ⏳";
-
-        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        estado.textContent = "Procesando...";
 
         const mimeType = audioChunks[0].type || 'audio/webm';
         const audioBlob = new Blob(audioChunks, { type: mimeType });
@@ -68,11 +63,8 @@
         try {
           const res = await fetch("/api/audio", {
             method: "POST",
-            body: formData,
+            body: formData
           });
-
-          if (!res.ok) throw new Error("Fallo al enviar el audio");
-
           const data = await res.json();
           audioRespuesta.src = data.audioUrl;
           audioRespuesta.play();
@@ -85,13 +77,12 @@
       };
 
       mediaRecorder.start();
-      estado.textContent = "🎙️ Grabando... habla ahora";
+      estado.textContent = "🎙️ Grabando...";
     };
 
     detenerBtn.onclick = () => {
       if (mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(track => track.stop());
         estado.textContent = "⏳ Procesando...";
       }
     };
