@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 app.post('/api/audio', upload.single('audio'), async (req, res) => {
   console.log("📥 POST /api/audio recibido");
 
-  const voiceId = req.body.voz || 'hYYNmijq0aL07R8FAKj1';
+  const voiceId = process.env.ELEVENLABS_VOICE_ID;
   const audioBuffer = req.file?.buffer;
 
   if (!audioBuffer) {
