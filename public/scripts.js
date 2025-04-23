@@ -6,6 +6,7 @@ const audioRespuesta = document.getElementById("audioRespuesta");
 let audioContext, stream, input, processor;
 let audioData = [];
 let hablando = false;
+let detenerSolicitado = false;
 
 btnHablar.onclick = async () => {
   hablando = true;
@@ -16,10 +17,12 @@ btnHablar.onclick = async () => {
 
 btnDetener.onclick = () => {
   hablando = false;
+  detenerSolicitado = true;
   btnHablar.classList.remove("oculto");
   btnDetener.classList.add("oculto");
   detenerGrabacion();
 };
+
 
 async function iniciarGrabacion() {
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -86,8 +89,13 @@ async function enviarAudio(blob) {
       audioRespuesta.play();
 
       audioRespuesta.onended = () => {
-        if (hablando) iniciarGrabacion();
-      };
+  if (hablando && !detenerSolicitado) {
+    iniciarGrabacion();
+  } else {
+    detenerSolicitado = false; // reset para la próxima vez
+  }
+};
+
     } else {
       if (hablando) iniciarGrabacion();
     }
