@@ -5,17 +5,12 @@ const audioRespuesta = document.getElementById("audioRespuesta");
 
 let audioContext, stream, input, processor;
 let audioData = [];
-btnDetener.onclick = () => {
-  hablando = false;
-  detenerSolicitado = true;
-  btnHablar.classList.remove("oculto");
-  btnDetener.classList.add("oculto");
-  detenerGrabacion();
-};
-
+let hablando = false;
+let detenerSolicitado = false;
 
 btnHablar.onclick = async () => {
   hablando = true;
+  detenerSolicitado = false;
   btnHablar.classList.add("oculto");
   btnDetener.classList.remove("oculto");
   iniciarGrabacion();
@@ -29,7 +24,6 @@ btnDetener.onclick = () => {
   detenerGrabacion();
 };
 
-
 async function iniciarGrabacion() {
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
   stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -39,12 +33,11 @@ async function iniciarGrabacion() {
   audioData = [];
   const silenceThreshold = 0.01;
   let silenceDuration = 0;
-  const maxSilence = 1500; // milisegundos
+  const maxSilence = 1500;
 
   processor.onaudioprocess = (e) => {
     const buffer = e.inputBuffer.getChannelData(0);
     audioData.push(new Float32Array(buffer));
-
     const rms = Math.sqrt(buffer.reduce((sum, x) => sum + x * x, 0) / buffer.length);
 
     if (rms < silenceThreshold) {
@@ -95,18 +88,15 @@ async function enviarAudio(blob) {
       audioRespuesta.play();
 
       audioRespuesta.onended = () => {
-  if (hablando && !detenerSolicitado) {
-    iniciarGrabacion();
-  } else {
-    // ya no continuar la conversación
-    detenerSolicitado = false; // reset para próxima conversación
-    hablando = false;
-  }
-};
-
-
+        if (hablando && !detenerSolicitado) {
+          iniciarGrabacion();
+        } else {
+          detenerSolicitado = false;
+          hablando = false;
+        }
+      };
     } else {
-      if (hablando) iniciarGrabacion();
+      if (hablando && !detenerSolicitado) iniciarGrabacion();
     }
   } catch (err) {
     agregarMensaje("❌ Error al enviar el audio", "bot");
