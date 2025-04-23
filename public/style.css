@@ -8,13 +8,11 @@ body {
   align-items: center;
   height: 100vh;
 }
-
 .container {
   text-align: center;
   width: 90%;
   max-width: 500px;
 }
-
 #botonPrincipal {
   background-color: #4CAF50;
   color: white;
@@ -27,11 +25,9 @@ body {
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
-
 #botonPrincipal:active {
   background-color: #388E3C;
 }
-
 #detener {
   margin-top: 15px;
   padding: 10px 20px;
@@ -42,7 +38,6 @@ body {
   border-radius: 5px;
   cursor: pointer;
 }
-
 #chat {
   margin-top: 20px;
   text-align: left;
@@ -53,20 +48,16 @@ body {
   max-height: 300px;
   overflow-y: auto;
 }
-
 .mensaje {
   margin-bottom: 10px;
 }
-
 .usuario {
   color: #333;
   font-weight: bold;
 }
-
 .bot {
   color: #0d47a1;
 }
-
 .oculto {
   display: none;
 }
