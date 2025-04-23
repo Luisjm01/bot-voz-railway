@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,83 +8,63 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>🤖 Bot de Voz</h1>
-    <p>Presiona el botón para grabar. Puedes detener la grabación manualmente.</p>
-
-    <select id="voz">
-      <option value="hYYNmijq0aL07R8FAKj1">🧔 Mi voz clonada</option>
-      <option value="EXAVITQu4vr4xnSDxMaL">🎙️ Antoni (voz masculina)</option>
-    </select>
-
-    <div class="buttons">
-      <button id="grabar">🎤 Hablar</button>
-      <button id="detener" disabled>✋ Detener</button>
-    </div>
-
-    <p id="estado"></p>
-
-    <h3>Respuesta del bot:</h3>
-    <audio id="audioRespuesta" controls></audio>
+  <h1>🤖 Bot de Voz</h1>
+  <p>Presiona el botón para grabar. Puedes detener la grabación manualmente.</p>
+  <select id="voz">
+    <option value="hYYnmijq0aL078R8FAKj1">🧔 Mi voz clonada</option>
+  </select>
+  <div class="botones">
+    <button id="hablar">🎤 Hablar</button>
+    <button id="detener">✋ Detener</button>
   </div>
-
+  <p id="status">Procesando... por favor espera ⏳</p>
+  <h3>Respuesta del bot:</h3>
+  <audio id="audioRespuesta" controls></audio>
   <script>
-    const grabarBtn = document.getElementById("grabar");
-    const detenerBtn = document.getElementById("detener");
-    const estado = document.getElementById("estado");
-    const audioRespuesta = document.getElementById("audioRespuesta");
-    const voz = document.getElementById("voz");
-
     let mediaRecorder;
     let audioChunks = [];
+    const status = document.getElementById('status');
+    const audioRespuesta = document.getElementById('audioRespuesta');
 
-    grabarBtn.onclick = async () => {
-      grabarBtn.disabled = true;
-      detenerBtn.disabled = false;
-
+    document.getElementById("hablar").onclick = async () => {
+      audioChunks = []; // <-- LIMPIA BUFFER
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
+      mediaRecorder.start();
 
       mediaRecorder.ondataavailable = event => {
-        if (event.data.size > 0) audioChunks.push(event.data);
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
       };
 
       mediaRecorder.onstop = async () => {
-        grabarBtn.disabled = false;
-        detenerBtn.disabled = true;
-        estado.textContent = "Procesando...";
-
-        const mimeType = audioChunks[0].type || 'audio/webm';
-        const audioBlob = new Blob(audioChunks, { type: mimeType });
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        audioChunks = []; // <-- LIMPIA BUFFER DESPUÉS DE USO
         const formData = new FormData();
-        formData.append("audio", audioBlob, "grabacion.webm");
-        formData.append("voz", voz.value);
+        formData.append('audio', audioBlob);
+        formData.append('voz', document.getElementById("voz").value);
+
+        status.textContent = "Procesando... por favor espera ⏳";
 
         try {
-          const res = await fetch("/api/audio", {
-            method: "POST",
-            body: formData
-          });
-          const data = await res.json();
-          audioRespuesta.src = data.audioUrl;
-          audioRespuesta.play();
-        } catch (err) {
+          const response = await fetch('/api/audio', { method: 'POST', body: formData });
+          const data = await response.json();
+          if (data.audioUrl) {
+            audioRespuesta.src = data.audioUrl;
+            audioRespuesta.play();
+          } else {
+            alert("Error al procesar el audio.");
+          }
+        } catch (error) {
           alert("Error al procesar el audio.");
-          console.error(err);
         }
-
-        estado.textContent = "";
       };
-
-      mediaRecorder.start();
-      estado.textContent = "🎙️ Grabando...";
     };
 
-    detenerBtn.onclick = () => {
+    document.getElementById("detener").onclick = () => {
       if (mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
-        estado.textContent = "⏳ Procesando...";
       }
     };
   </script>
