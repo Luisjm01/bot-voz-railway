@@ -8,16 +8,13 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>🤖 Bot de Voz</h1>
-  <select id="voz">
-    <option value="hYYNmijq0aL07R8FAKj1">Antonio</option>
-  </select>
-  <br />
-  <button id="hablar">🎙 Hablar</button>
-  <button id="detener" disabled>⏹ Detener</button>
-  <br />
-  <audio id="audioRespuesta" controls></audio>
-
+  <div class="container">
+    <h1>🤖 Bot de Voz</h1>
+    <div id="chat"></div>
+    <button id="botonPrincipal">🎙 Hablar</button>
+    <button id="detener" class="secundario oculto">⏹ Detener</button>
+    <audio id="audioRespuesta" class="oculto" controls></audio>
+  </div>
   <script src="scripts.js"></script>
 </body>
 </html>

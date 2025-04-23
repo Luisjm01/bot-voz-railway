@@ -1,15 +1,72 @@
 
 body {
-  font-family: sans-serif;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #f5f7fa, #c3cfe2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
   text-align: center;
-  padding: 2rem;
-  background-color: #f4f4f4;
+  width: 90%;
+  max-width: 500px;
 }
-button {
-  margin: 1rem;
-  padding: 1rem 2rem;
-  font-size: 1.2rem;
+
+#botonPrincipal {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  font-size: 2rem;
+  margin-top: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
-audio {
-  margin-top: 2rem;
+
+#botonPrincipal:active {
+  background-color: #388E3C;
+}
+
+#detener {
+  margin-top: 15px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  background-color: #e53935;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#chat {
+  margin-top: 20px;
+  text-align: left;
+  background-color: white;
+  padding: 15px;
+  border-radius: 10px;
+  min-height: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.mensaje {
+  margin-bottom: 10px;
+}
+
+.usuario {
+  color: #333;
+  font-weight: bold;
+}
+
+.bot {
+  color: #0d47a1;
+}
+
+.oculto {
+  display: none;
 }
