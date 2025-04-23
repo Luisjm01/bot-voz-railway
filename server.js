@@ -1,3 +1,4 @@
+
 const express = require('express');
 const multer = require('multer');
 const axios = require('axios');
@@ -29,7 +30,7 @@ app.get('/', (req, res) => {
 app.post('/api/audio', upload.single('audio'), async (req, res) => {
   console.log("📥 POST /api/audio recibido");
 
-  const voiceId = req.body.voz || 'hYYNmijq0aL07R8FAKj1';
+  const voiceId = req.body.voz || 'hYYnmijq0aL078R8FAKj1';
   const audioBuffer = req.file?.buffer;
 
   if (!audioBuffer) {
@@ -65,12 +66,11 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: transcripcion }]
+        messages: [{ role: 'user', content: transcripcion }],
       },
       {
         headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
         }
       }
     );
@@ -80,7 +80,11 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
 
     console.log("💾 Guardando en Supabase...");
     await supabase.from('memoria').insert([
-      { user_id: 'default', pregunta: transcripcion, respuesta: respuestaTexto }
+      {
+        user_id: 'default',
+        pregunta: transcripcion,
+        respuesta: respuestaTexto,
+      },
     ]);
 
     console.log("🔊 Generando audio en ElevenLabs...");
