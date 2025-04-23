@@ -2,64 +2,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bot de Voz</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>🤖 Bot de Voz</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>🤖 Bot de Voz</h1>
   <p>Presiona el botón para grabar. Puedes detener la grabación manualmente.</p>
   <select id="voz">
-    <option value="hYYnmijq0aL078R8FAKj1">🧔 Mi voz clonada</option>
+    <option value="hYYNmijq0aL07R8FAKj1">🥸 Mi voz clonada</option>
   </select>
-  <br/><br/>
-  <button id="startBtn">🎤 Hablar</button>
-  <button id="stopBtn" disabled>✋ Detener</button>
-  <p id="status"></p>
+  <div class="botones">
+    <button id="startBtn">🎤 Hablar</button>
+    <button id="stopBtn" disabled>✋ Detener</button>
+  </div>
+  <p id="status">Procesando... por favor espera ⏳</p>
   <h3>Respuesta del bot:</h3>
-  <audio id="audioPlayer" controls></audio>
+  <audio id="respuestaAudio" controls></audio>
 
-  <script>
-    let mediaRecorder;
-    let audioChunks = [];
-
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const status = document.getElementById('status');
-    const audioPlayer = document.getElementById('audioPlayer');
-
-    startBtn.onclick = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.start();
-      audioChunks = [];
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'grabacion.webm');
-        formData.append('voz', document.getElementById('voz').value);
-
-        status.innerText = "Procesando... por favor espera ⏳";
-        const res = await fetch('/api/audio', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.audioUrl) {
-          audioPlayer.src = data.audioUrl;
-          audioPlayer.play();
-        } else {
-          alert("Error al procesar el audio.");
-        }
-        status.innerText = "";
-      };
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-    };
-
-    stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-    };
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
