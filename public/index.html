@@ -1,36 +1,72 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bot de Voz</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🤖 Bot de Voz</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+      color: #333;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    button {
+      margin: 0.5rem;
+      padding: 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    #respuesta {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    audio {
+      margin-top: 1rem;
+    }
+  </style>
 </head>
 <body>
   <h1>🤖 Bot de Voz</h1>
   <p>Presiona el botón para grabar. Puedes detener la grabación manualmente.</p>
   <select id="voz">
-    <option value="hYYnmijq0aL078R8FAKj1">🧔 Mi voz clonada</option>
+    <option value="hYYnmijq0aL078FAKj1">🧔‍♂️ Mi voz clonada</option>
   </select>
-  <div class="botones">
-    <button id="hablar">🎤 Hablar</button>
-    <button id="detener">✋ Detener</button>
+  <br />
+  <button id="startBtn">🎤 Hablar</button>
+  <button id="stopBtn" disabled>✋ Detener</button>
+  <div id="respuesta">
+    <p><strong>Respuesta del bot:</strong></p>
+    <audio id="audioPlayer" controls></audio>
   </div>
-  <p id="status">Procesando... por favor espera ⏳</p>
-  <h3>Respuesta del bot:</h3>
-  <audio id="audioRespuesta" controls></audio>
+
   <script>
     let mediaRecorder;
     let audioChunks = [];
-    const status = document.getElementById('status');
-    const audioRespuesta = document.getElementById('audioRespuesta');
 
-    document.getElementById("hablar").onclick = async () => {
-      audioChunks = []; // <-- LIMPIA BUFFER
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const voz = document.getElementById("voz");
+
+    startBtn.onclick = async () => {
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.start();
+      audioChunks = [];
 
       mediaRecorder.ondataavailable = event => {
         if (event.data.size > 0) {
@@ -39,33 +75,34 @@
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        audioChunks = []; // <-- LIMPIA BUFFER DESPUÉS DE USO
+        const blob = new Blob(audioChunks, { type: "audio/webm" });
         const formData = new FormData();
-        formData.append('audio', audioBlob);
-        formData.append('voz', document.getElementById("voz").value);
+        formData.append("audio", blob);
+        formData.append("voz", voz.value);
 
-        status.textContent = "Procesando... por favor espera ⏳";
+        const response = await fetch("/api/audio", {
+          method: "POST",
+          body: formData
+        });
 
-        try {
-          const response = await fetch('/api/audio', { method: 'POST', body: formData });
-          const data = await response.json();
-          if (data.audioUrl) {
-            audioRespuesta.src = data.audioUrl;
-            audioRespuesta.play();
-          } else {
-            alert("Error al procesar el audio.");
-          }
-        } catch (error) {
+        const data = await response.json();
+        if (data.audioUrl) {
+          audioPlayer.src = data.audioUrl;
+          audioPlayer.play();
+        } else {
           alert("Error al procesar el audio.");
         }
+
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
       };
+
+      mediaRecorder.start();
     };
 
-    document.getElementById("detener").onclick = () => {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-      }
+    stopBtn.onclick = () => {
+      stopBtn.disabled = true;
+      mediaRecorder.stop();
     };
   </script>
 </body>
