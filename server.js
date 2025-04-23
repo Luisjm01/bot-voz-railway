@@ -9,7 +9,7 @@ const FormData = require('form-data');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -28,9 +28,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/audio', upload.single('audio'), async (req, res) => {
-  console.log("📥 POST /api/audio recibido");
-
-  const voiceId = req.body.voz || 'hYYnmijq0aL078R8FAKj1';
+  const voiceId = req.body.voz || 'hYYNmijq0aL07R8FAKj1';
   const audioBuffer = req.file?.buffer;
 
   if (!audioBuffer) {
@@ -38,12 +36,8 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
   }
 
   try {
-    console.log("🔁 Enviando audio a Whisper...");
     const formData = new FormData();
-    formData.append('file', audioBuffer, {
-      filename: 'grabacion.webm',
-      contentType: 'audio/webm'
-    });
+    formData.append('file', audioBuffer, 'audio.webm');
     formData.append('model', 'whisper-1');
     formData.append('response_format', 'json');
 
@@ -53,15 +47,13 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       {
         headers: {
           ...formData.getHeaders(),
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-        }
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
       }
     );
 
     const transcripcion = whisperResp.data.text;
-    console.log("📝 Transcripción recibida:", transcripcion);
 
-    console.log("🤖 Solicitando respuesta a GPT...");
     const chatResp = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
@@ -70,15 +62,14 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       },
       {
         headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-        }
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
       }
     );
 
     const respuestaTexto = chatResp.data.choices[0].message.content;
-    console.log("✅ Respuesta GPT:", respuestaTexto);
 
-    console.log("💾 Guardando en Supabase...");
     await supabase.from('memoria').insert([
       {
         user_id: 'default',
@@ -87,7 +78,6 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       },
     ]);
 
-    console.log("🔊 Generando audio en ElevenLabs...");
     const audioResp = await axios({
       method: 'POST',
       url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
@@ -111,10 +101,9 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     const filePath = path.join(__dirname, 'public', filename);
     fs.writeFileSync(filePath, audioResp.data);
 
-    console.log("✅ Audio generado y guardado:", filename);
     res.json({ audioUrl: `/${filename}` });
   } catch (error) {
-    console.error("❌ Error procesando audio:", error.response?.data || error.message);
+    console.error('❌ Error procesando audio:', error.response?.data || error.message);
     res.status(500).json({ error: 'Ocurrió un error procesando tu audio.' });
   }
 });
