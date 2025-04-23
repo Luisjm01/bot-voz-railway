@@ -62,17 +62,27 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
 
     console.log("🧠 Solicitando respuesta a GPT...");
     const chatResp = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
+  'https://api.openai.com/v1/chat/completions',
+  {
+    model: 'gpt-3.5-turbo',
+    messages: [
       {
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: transcripcion }],
+        role: 'system',
+        content: 'Eres un asistente conversacional cálido, amable y natural. Responde SIEMPRE en español, usando un tono humano, cercano y emocional. Nunca hables en inglés.',
       },
       {
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        }
+        role: 'user',
+        content: transcripcion,
       }
-    );
+    ],
+  },
+  {
+    headers: {
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+    }
+  }
+);
+
 
     const respuestaTexto = chatResp.data.choices[0].message.content;
     console.log("✅ Respuesta GPT:", respuestaTexto);
