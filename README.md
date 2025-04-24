@@ -5,39 +5,16 @@ Este proyecto implementa un bot de voz que graba audio en el navegador (Mac y iP
 
 ## Tecnologías utilizadas
 
-- Frontend: HTML, JS (AudioContext en WAV compatible con Safari)
-- Backend: Node.js (Express, Multer, Axios)
-- APIs: OpenAI (Whisper, ChatGPT), ElevenLabs, Supabase
+- Node.js + Express
+- OpenAI Whisper y GPT
+- ElevenLabs (API de voz)
+- Supabase (memoria opcional)
+- Railway (despliegue automático)
 
-## ¿Cómo usar?
+## Variables de entorno necesarias (en Railway)
 
-1. Clona o descarga el repositorio:
-   ```bash
-   git clone <URL> o descarga ZIP
-   ```
-
-2. Instala las dependencias:
-   ```bash
-   npm install
-   ```
-
-3. Crea un archivo `.env` con tus claves:
-   ```
-   SUPABASE_URL=...
-   SUPABASE_ANON_KEY=...
-   ELEVENLABS_API_KEY=...
-   OPENAI_API_KEY=...
-   ```
-
-4. Inicia el servidor:
-   ```bash
-   npm start
-   ```
-
-5. Abre en tu navegador:
-   ```
-   http://localhost:8080
-   ```
-
-## Créditos
-Proyecto desarrollado con ❤️ para automatización por voz y aprendizaje de IA.
+- `OPENAI_API_KEY`
+- `ELEVEN_API_KEY`
+- `ELEVENLABS_VOICE_ID`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`

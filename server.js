@@ -66,10 +66,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: 'Eres Toscanito, un asistente de voz especializado en la región de la Toscana, Italia. Hablas en español y das recomendaciones amigables, culturales, turísticas y gastronómicas como un guía local entusiasta.' },
-          { role: 'user', content: transcripcion }
-        ]
+        messages: [{ role: 'user', content: transcripcion }],
       },
       {
         headers: {
