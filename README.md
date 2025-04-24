@@ -1,20 +1,29 @@
+# Toscanito Bot de Voz
 
-# Bot de Voz con Node.js, OpenAI, Whisper y ElevenLabs
+Interfaz web del bot de voz "Toscanito", estilo Toscana, sirve audio y chat.
 
-Este proyecto implementa un bot de voz que graba audio en el navegador (Mac y iPhone compatible), lo transcribe usando Whisper de OpenAI, genera una respuesta con ChatGPT y convierte esa respuesta en voz con ElevenLabs.
+## Estructura
 
-## Tecnologías utilizadas
+- server.js             - Servidor Express para servir archivos estáticos.
+- package.json          - Dependencias y scripts.
+- env_example.txt       - Variables de entorno necesarias.
+- public/
+  - index.html          - Interfaz principal.
+  - style.css           - Estilos con paleta Toscana.
+  - scripts.js          - Lógica de UI (grabación, animación, chat).
+  - assets/
+    - toscanito.png     - Ilustración de Toscanito.
+    - thinking.gif      - Indicador de "pensando".
 
-- Node.js + Express
-- OpenAI Whisper y GPT
-- ElevenLabs (API de voz)
-- Supabase (memoria opcional)
-- Railway (despliegue automático)
+## Instalación
 
-## Variables de entorno necesarias (en Railway)
+1. Clona o descarga el proyecto.
+2. Copia `env_example.txt` a `.env` y completa tus credenciales.
+3. Ejecuta:
+   ```bash
+   npm install
+   npm start
+   ```
+4. Abre `http://localhost:8080` en tu navegador.
 
-- `OPENAI_API_KEY`
-- `ELEVEN_API_KEY`
-- `ELEVENLABS_VOICE_ID`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
+¡Disfruta de Toscanito! 😊

@@ -11,21 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 100);
 
   button.addEventListener('click', async () => {
-    // Show thinking indicator
     thinking.classList.remove('hidden');
-
-    // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Hide thinking
     thinking.classList.add('hidden');
-
-    // Append message to chat
     const message = document.createElement('div');
     message.textContent = 'Toscanito: ¡Aquí está tu respuesta! 😊';
     chat.appendChild(message);
-
-    // Scroll to bottom
     chat.scrollTop = chat.scrollHeight;
   });
 });

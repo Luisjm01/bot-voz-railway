@@ -1,8 +1,9 @@
-
-# Variables de entorno para este proyecto
-
-OPENAI_API_KEY=sk-...
-ELEVEN_API_KEY=eleven-...
-ELEVENLABS_VOICE_ID=abc123456789
-SUPABASE_URL=https://xyz.supabase.co
-SUPABASE_ANON_KEY=public-anon-key
+# Variables de entorno para Toscanito Bot de Voz
+PORT=8080
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_WHATSAPP_NUMBER=whatsapp:+123456789
+OPENAI_API_KEY=your_openai_api_key
+ELEVENLABS_API_KEY=your_elevenlabs_api_key
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
