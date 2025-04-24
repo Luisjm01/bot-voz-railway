@@ -1,1 +1,1 @@
-// Versión simplificada de server.js para Toscanito
+// server.js aquí va el código del servidor Toscanito (pendiente de copiar el final completo)
