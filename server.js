@@ -59,18 +59,19 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     );
 
     const transcripcion = whisperResp.data.text;
+const texto = transcripcion.trim().toLowerCase();
 
-    const texto = transcripcion.trim().toLowerCase();
-    const finales = ["thank you", "bye", "you", "gracias", "adiós", "me voy", "nos vemos", "hasta luego", "chau", "chao", "ciao", "arrivederci"];
-    if (finales.includes(texto)) {
-      console.log("👋 Despedida detectada. Fin sin respuesta.");
+    // Evitar procesamiento si contiene caracteres no latinos
+    if (!/^[a-záéíóúñü\s.,!?¡¿]+$/i.test(texto)) {
+      console.log("🌐 Transcripción con caracteres no latinos. Se ignora.");
       return res.json({ transcripcion, respuesta: null, audioUrl: null });
     }
 
-    console.log("📝 Transcripción recibida:", transcripcion);
-
-    console.log("🧠 Solicitando respuesta a GPT...");
-    const chatResp = await axios.post(
+    const finales = ["thank you", "bye", "you", "gracias", "adiós", "me voy", "nos vemos", "hasta luego", "chau", "chao", "ciao", "arrivederci"];
+    if (finales.includes(texto) && texto.split(" ").length <= 2) {
+      console.log("👋 Despedida detectada con frase corta. Fin sin respuesta.");
+      return res.json({ transcripcion, respuesta: null, audioUrl: null });
+    }
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-3.5-turbo',
