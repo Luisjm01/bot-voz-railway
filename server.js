@@ -1,3 +1,4 @@
+
 const express = require('express');
 const multer = require('multer');
 const axios = require('axios');
@@ -62,27 +63,17 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
 
     console.log("🧠 Solicitando respuesta a GPT...");
     const chatResp = await axios.post(
-  'https://api.openai.com/v1/chat/completions',
-  {
-    model: 'gpt-3.5-turbo',
-    messages: [
+      'https://api.openai.com/v1/chat/completions',
       {
-        role: 'system',
-        content: 'Eres un asistente conversacional cálido, amable y natural. Responde SIEMPRE en español, usando un tono humano, cercano y emocional. Nunca hables en inglés.',
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: transcripcion }],
       },
       {
-        role: 'user',
-        content: transcripcion,
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        }
       }
-    ],
-  },
-  {
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-    }
-  }
-);
-
+    );
 
     const respuestaTexto = chatResp.data.choices[0].message.content;
     console.log("✅ Respuesta GPT:", respuestaTexto);
@@ -120,7 +111,11 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     const filePath = path.join(__dirname, 'public', filename);
     fs.writeFileSync(filePath, audioResp.data);
 
-    res.json({ audioUrl: `/${filename}` });
+    res.json({
+      audioUrl: `/${filename}`,
+      transcripcion,
+      respuesta: respuestaTexto
+    });
   } catch (error) {
     console.error("❌ Error procesando audio:", error.response?.data || error.message);
     res.status(500).json({ error: 'Error procesando el audio.' });
