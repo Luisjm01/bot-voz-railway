@@ -1,9 +1,0 @@
-
-# Claves necesarias para funcionamiento del bot de voz
-
-SUPABASE_URL=https://your-supabase-project.supabase.co
-SUPABASE_ANON_KEY=your-supabase-anon-key
-
-OPENAI_API_KEY=your-openai-api-key
-
-ELEVENLABS_API_KEY=your-elevenlabs-api-key
