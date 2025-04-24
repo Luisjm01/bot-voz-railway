@@ -78,8 +78,7 @@ async function enviarAudio(blob) {
   const formData = new FormData();
   formData.append("audio", blob, "grabacion.wav");
 
-  const thinking = document.getElementById("thinking");
-  if (thinking) thinking.classList.remove("oculto");
+  document.getElementById("thinking").classList.remove("oculto");
 
   try {
     const response = await fetch("/api/audio", {
@@ -89,29 +88,27 @@ async function enviarAudio(blob) {
 
     const data = await response.json();
 
+    console.log("📝 Transcripción cruda:", data.transcripcion);
     if (!data.transcripcion || data.transcripcion.trim().length < 3 || data.transcripcion.toLowerCase() === "you") {
       console.log("📭 Transcripción vacía o irrelevante. No se continúa.");
       detenerSolicitado = true;
-      if (thinking) thinking.classList.add("oculto");
+      document.getElementById("thinking").classList.add("oculto");
       return;
     }
 
-    if (!data.transcripcion || data.transcripcion.trim().length < 3 || data.transcripcion.toLowerCase() === "you") {
-      console.log("📭 Transcripción vacía o irrelevante. No se continúa.");
-      detenerSolicitado = true;
-      if (thinking) thinking.classList.add("oculto");
-      return;
-    }
+    console.log('✅ Mostrando mensaje de usuario:', data.transcripcion);
     agregarMensaje("🗣️ " + data.transcripcion, "usuario");
 
     if (data.respuesta) {
-      if (thinking) thinking.classList.add("oculto");
+      document.getElementById("thinking").classList.add("oculto");
+      console.log('✅ Mostrando respuesta del bot:', data.respuesta);
       agregarMensaje("🤖 " + data.respuesta, "bot");
     }
 
     if (data.audioUrl) {
       audioRespuesta.src = data.audioUrl;
       audioRespuesta.classList.remove("oculto");
+      console.log('🔊 Reproduciendo audio:', audioRespuesta.src);
       audioRespuesta.play();
 
       audioRespuesta.onended = () => {
