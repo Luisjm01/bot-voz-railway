@@ -1,8 +1,0 @@
-
-# Variables de entorno para este proyecto
-
-OPENAI_API_KEY=sk-...
-ELEVEN_API_KEY=eleven-...
-ELEVENLABS_VOICE_ID=abc123456789
-SUPABASE_URL=https://xyz.supabase.co
-SUPABASE_ANON_KEY=public-anon-key
