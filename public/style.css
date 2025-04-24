@@ -1,72 +1,96 @@
 
 body {
-  font-family: serif;
-  background: linear-gradient(to bottom right, #f7f1e1, #e7d9c7);
-  color: #4a3c2f;
   margin: 0;
-  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #e5ddd5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #999;
+  padding: 20px;
+  width: 95%;
+  max-width: 600px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-#app {
+h1 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #075e54;
+}
+.warning {
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #ff5722;
+}
+.chatbox {
   width: 100%;
-  max-width: 600px;
-  padding: 20px;
-}
-header {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0;
-}
-.sub {
-  color: #7a5e48;
-  font-style: italic;
-}
-.chat {
-  background-color: #fffaf3;
-  border: 1px solid #dacbb9;
-  border-radius: 1rem;
-  padding: 1rem;
+  background-color: #dcf8c6;
+  border-radius: 10px;
+  padding: 10px;
   height: 300px;
   overflow-y: auto;
-  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 .mensaje {
-  margin: 0.5rem;
-  padding: 0.75rem;
-  border-radius: 1rem;
-  max-width: 75%;
+  padding: 8px 12px;
+  border-radius: 20px;
+  margin: 4px 0;
+  max-width: 80%;
 }
-.mensaje.usuario {
-  background: #e2d2b8;
+.usuario {
   align-self: flex-end;
+  background-color: #34b7f1;
+  color: #fff;
 }
-.mensaje.bot {
-  background: #f3ece2;
+.bot {
   align-self: flex-start;
+  background-color: #ece5dd;
+  color: #000;
 }
-.controls {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1rem;
-}
-button {
-  background-color: #a67c52;
+.main-button {
+  background-color: #25d366;
   color: white;
-  padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
   border: none;
-  border-radius: 2rem;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  font-size: 2rem;
+  margin-top: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
   cursor: pointer;
 }
-button:hover {
-  background-color: #8c6239;
+.secundario {
+  margin-top: 10px;
+  padding: 8px 20px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
 .oculto {
   display: none;
+}
+#thinking {
+  margin-top: 10px;
+  font-size: 1.1rem;
+  color: #075e54;
+}
+.dots::after {
+  content: '';
+  animation: dots 1.5s infinite;
+}
+@keyframes dots {
+  0% { content: ''; }
+  33% { content: '.'; }
+  66% { content: '..'; }
+  100% { content: '...'; }
 }
