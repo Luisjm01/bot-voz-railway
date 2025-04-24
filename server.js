@@ -59,6 +59,14 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     );
 
     const transcripcion = whisperResp.data.text;
+
+    const texto = transcripcion.trim().toLowerCase();
+    const finales = ["thank you", "bye", "you", "gracias", "adiós", "me voy", "nos vemos", "hasta luego", "chau", "chao", "ciao", "arrivederci"];
+    if (finales.includes(texto)) {
+      console.log("👋 Despedida detectada. Fin sin respuesta.");
+      return res.json({ transcripcion, respuesta: null, audioUrl: null });
+    }
+
     console.log("📝 Transcripción recibida:", transcripcion);
 
     console.log("🧠 Solicitando respuesta a GPT...");
