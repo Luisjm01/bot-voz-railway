@@ -34,41 +34,6 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
   const audioBuffer = req.file?.buffer;
 
   if (!audioBuffer) {
-    return res.status(400).json({ error: 'No se recibió el archivo de audio' });
-  }
-
-  try {
-    const audioFormData = new FormData();
-    audioFormData.append('text', req.body.text || 'Hola desde Toscanito');
-    audioFormData.append('voice_id', voiceId);
-    audioFormData.append('model_id', 'eleven_multilingual_v2');
-    audioFormData.append('voice_settings', JSON.stringify({
-      stability: 0.5,
-      similarity_boost: 0.5
-    }));
-
-    const elevenResponse = await axios.post(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
-      audioFormData,
-      {
-        headers: {
-          'Content-Type': `multipart/form-data; boundary=${audioFormData._boundary}`,
-          'xi-api-key': process.env.ELEVENLABS_API_KEY,
-        },
-        responseType: 'arraybuffer'
-      }
-    );
-
-    const audioOutputPath = path.join(__dirname, 'public', `voz-${Date.now()}.mp3`);
-    fs.writeFileSync(audioOutputPath, elevenResponse.data);
-    console.log("✅ Audio generado correctamente:", audioOutputPath);
-  } catch (err) {
-    console.error("❌ Error generando audio en ElevenLabs:", err.response?.data || err.message);
-    return res.status(500).json({ error: 'Error generando audio' });
-  }
-
-
-  if (!audioBuffer) {
     return res.status(400).json({ error: 'No se recibió el archivo de audio.' });
   }
 
