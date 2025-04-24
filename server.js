@@ -23,6 +23,12 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
+const despedidas = [
+  "bye", "thank you", "you",
+  "gracias", "me despido", "adios", "hasta luego",
+  "ciao", "arrivederci"
+];
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -58,27 +64,24 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       }
     );
 
-    const transcripcion = whisperResp.data.text;
-const texto = transcripcion.trim().toLowerCase();
+    const transcripcion = whisperResp.data.text.trim().toLowerCase();
+    console.log("📝 Transcripción recibida:", transcripcion);
 
-    // Evitar procesamiento si contiene caracteres no latinos
-    if (!/^[a-záéíóúñü\s.,!?¡¿]+$/i.test(texto)) {
-      console.log("🌐 Transcripción con caracteres no latinos. Se ignora.");
-      return res.json({ transcripcion, respuesta: null, audioUrl: null });
+    // Filtro por contenido irrelevante
+    if (despedidas.includes(transcripcion) || transcripcion.length < 3) {
+      console.log("❌ Transcripción vacía o irrelevante. No se continúa.");
+      return res.json({ transcripcion });
     }
 
-    const finales = ["thank you", "bye", "you", "gracias", "adiós", "me voy", "nos vemos", "hasta luego", "chau", "chao", "ciao", "arrivederci"];
-    if (finales.includes(texto) && texto.split(" ").length <= 2) {
-      console.log("👋 Despedida detectada con frase corta. Fin sin respuesta.");
-      return res.json({ transcripcion, respuesta: null, audioUrl: null });
-    }
+    console.log("🧠 Solicitando respuesta a GPT...");
+    const chatResp = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: 'Eres Toscanito, un asistente de voz especializado en la región de la Toscana, Italia. Hablas en español y das recomendaciones amigables, culturales, turísticas y gastronómicas como un guía local entusiasta.' },
+          { role: 'system', content: 'Eres Toscanito, un guía turístico experto en la Toscana. Responde siempre en español y de forma amigable.' },
           { role: 'user', content: transcripcion }
-        ]
+        ],
       },
       {
         headers: {
@@ -123,11 +126,7 @@ const texto = transcripcion.trim().toLowerCase();
     const filePath = path.join(__dirname, 'public', filename);
     fs.writeFileSync(filePath, audioResp.data);
 
-    res.json({
-      audioUrl: `/${filename}`,
-      transcripcion,
-      respuesta: respuestaTexto
-    });
+    res.json({ audioUrl: `/${filename}`, transcripcion, respuesta: respuestaTexto });
   } catch (error) {
     console.error("❌ Error procesando audio:", error.response?.data || error.message);
     res.status(500).json({ error: 'Error procesando el audio.' });
