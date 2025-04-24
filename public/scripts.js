@@ -37,7 +37,7 @@ async function iniciarGrabacion() {
   audioData = [];
   const silenceThreshold = 0.01;
   let silenceDuration = 0;
-  const maxSilence = 1500;
+  const maxSilence = 3000;
 
   processor.onaudioprocess = (e) => {
     const buffer = e.inputBuffer.getChannelData(0);
