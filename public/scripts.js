@@ -37,7 +37,7 @@ async function iniciarGrabacion() {
   audioData = [];
   const silenceThreshold = 0.01;
   let silenceDuration = 0;
-  const maxSilence = 3000;
+  const maxSilence = 1500;
 
   processor.onaudioprocess = (e) => {
     const buffer = e.inputBuffer.getChannelData(0);
@@ -113,12 +113,8 @@ async function enviarAudio(blob) {
       audioRespuesta.play();
 
       audioRespuesta.onended = () => {
-        if (hablando && !detenerSolicitado) {
-          iniciarGrabacion();
-        } else {
-          detenerSolicitado = false;
-          hablando = false;
-        }
+        detenerSolicitado = false;
+        hablando = false;
       };
     } else {
       if (hablando && !detenerSolicitado) iniciarGrabacion();
