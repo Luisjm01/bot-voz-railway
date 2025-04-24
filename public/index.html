@@ -1,23 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Toscanito</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toscanito Bot de Voz</title>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Estilos -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Script principal -->
+  <script defer src="scripts.js"></script>
 </head>
 <body>
-  <header>
-    <img src="https://cdn-icons-png.flaticon.com/512/805/805370.png" alt="Toscanito" style="width: 30px; height: 30px; margin-right: 10px;">
-    Toscanito
-  </header>
-  <div class="chat-container" id="chat">
-    <!-- Chat messages go here -->
+  <div class="app-container">
+    <!-- Ilustración de Toscanito -->
+    <div class="illustration">
+      <img src="assets/toscanito.png" alt="Toscanito ilustración">
+    </div>
+
+    <!-- Botón de grabación central -->
+    <button id="record-button">🎙️ Grabar</button>
+
+    <!-- Indicador de "pensando" -->
+    <div id="thinking-indicator" class="hidden">
+      <img src="assets/thinking.gif" alt="Toscanito pensando">
+    </div>
+
+    <!-- Contenedor de chat -->
+    <div id="chat-container"></div>
   </div>
-  <button class="record-btn" onclick="toggleRecording()">
-    🎙️
-  </button>
-  <script src="scripts.js"></script>
 </body>
 </html>
