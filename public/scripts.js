@@ -86,7 +86,15 @@ async function enviarAudio(blob) {
 
     const data = await response.json();
 
-    if (data.transcripcion) agregarMensaje("🗣️ " + data.transcripcion, "usuario");
+    if (data.transcripcion) {
+    agregarMensaje("🗣️ " + data.transcripcion, "usuario");
+    if (!data.transcripcion || data.transcripcion.trim().length < 3) {
+      console.log("📭 Transcripción vacía o irrelevante. No se continúa.");
+      detenerSolicitado = true;
+      document.getElementById("thinking").classList.add("oculto");
+      return;
+    }
+  }
     document.getElementById("thinking").classList.add("oculto");
     if (data.respuesta) agregarMensaje("🤖 " + data.respuesta, "bot");
 
