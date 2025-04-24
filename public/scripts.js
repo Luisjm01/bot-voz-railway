@@ -78,7 +78,8 @@ async function enviarAudio(blob) {
   const formData = new FormData();
   formData.append("audio", blob, "grabacion.wav");
 
-  document.getElementById("thinking").classList.remove("oculto");
+  const thinking = document.getElementById("thinking");
+  if (thinking) thinking.classList.remove("oculto");
 
   try {
     const response = await fetch("/api/audio", {
@@ -91,14 +92,20 @@ async function enviarAudio(blob) {
     if (!data.transcripcion || data.transcripcion.trim().length < 3 || data.transcripcion.toLowerCase() === "you") {
       console.log("📭 Transcripción vacía o irrelevante. No se continúa.");
       detenerSolicitado = true;
-      document.getElementById("thinking").classList.add("oculto");
+      if (thinking) thinking.classList.add("oculto");
       return;
     }
 
+    if (!data.transcripcion || data.transcripcion.trim().length < 3 || data.transcripcion.toLowerCase() === "you") {
+      console.log("📭 Transcripción vacía o irrelevante. No se continúa.");
+      detenerSolicitado = true;
+      if (thinking) thinking.classList.add("oculto");
+      return;
+    }
     agregarMensaje("🗣️ " + data.transcripcion, "usuario");
 
     if (data.respuesta) {
-      document.getElementById("thinking").classList.add("oculto");
+      if (thinking) thinking.classList.add("oculto");
       agregarMensaje("🤖 " + data.respuesta, "bot");
     }
 
