@@ -23,6 +23,12 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
+const despedidas = [
+  "bye", "thank you", "you",
+  "gracias", "me despido", "adios", "hasta luego",
+  "ciao", "arrivederci"
+];
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -58,15 +64,24 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       }
     );
 
-    const transcripcion = whisperResp.data.text;
+    const transcripcion = whisperResp.data.text.trim().toLowerCase();
     console.log("📝 Transcripción recibida:", transcripcion);
+
+    // Filtro por contenido irrelevante
+    if (despedidas.includes(transcripcion) || transcripcion.length < 3) {
+      console.log("❌ Transcripción vacía o irrelevante. No se continúa.");
+      return res.json({ transcripcion });
+    }
 
     console.log("🧠 Solicitando respuesta a GPT...");
     const chatResp = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: transcripcion }],
+        messages: [
+          { role: 'system', content: 'Eres Toscanito, un guía turístico experto en la Toscana. Responde siempre en español y de forma amigable.' },
+          { role: 'user', content: transcripcion }
+        ],
       },
       {
         headers: {
@@ -111,11 +126,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     const filePath = path.join(__dirname, 'public', filename);
     fs.writeFileSync(filePath, audioResp.data);
 
-    res.json({
-      audioUrl: `/${filename}`,
-      transcripcion,
-      respuesta: respuestaTexto
-    });
+    res.json({ audioUrl: `/${filename}`, transcripcion, respuesta: respuestaTexto });
   } catch (error) {
     console.error("❌ Error procesando audio:", error.response?.data || error.message);
     res.status(500).json({ error: 'Error procesando el audio.' });
