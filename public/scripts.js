@@ -1,3 +1,4 @@
+
 const btnHablar = document.getElementById("botonPrincipal");
 const btnDetener = document.getElementById("detener");
 const chat = document.getElementById("chat");
@@ -10,7 +11,7 @@ let detenerSolicitado = false;
 
 btnHablar.onclick = async () => {
   if (audioContext?.state === "suspended") {
-    await audioContext.resume(); // desbloquear audio en iOS
+    await audioContext.resume();
   }
   hablando = true;
   detenerSolicitado = false;
@@ -73,6 +74,7 @@ async function enviarAudio(blob) {
     console.log("🎤 Grabación ignorada porque se solicitó detener.");
     return;
   }
+
   const formData = new FormData();
   formData.append("audio", blob, "grabacion.wav");
 
@@ -86,17 +88,19 @@ async function enviarAudio(blob) {
 
     const data = await response.json();
 
-    if (data.transcripcion) {
-    agregarMensaje("🗣️ " + data.transcripcion, "usuario");
-    if (!data.transcripcion || data.transcripcion.trim().length < 3) {
+    if (!data.transcripcion || data.transcripcion.trim().length < 3 || data.transcripcion.toLowerCase() === "you") {
       console.log("📭 Transcripción vacía o irrelevante. No se continúa.");
       detenerSolicitado = true;
       document.getElementById("thinking").classList.add("oculto");
       return;
     }
-  }
-    document.getElementById("thinking").classList.add("oculto");
-    if (data.respuesta) agregarMensaje("🤖 " + data.respuesta, "bot");
+
+    agregarMensaje("🗣️ " + data.transcripcion, "usuario");
+
+    if (data.respuesta) {
+      document.getElementById("thinking").classList.add("oculto");
+      agregarMensaje("🤖 " + data.respuesta, "bot");
+    }
 
     if (data.audioUrl) {
       audioRespuesta.src = data.audioUrl;
@@ -169,7 +173,6 @@ function encodeWAV(samples) {
 
   return new Blob([view], { type: "audio/wav" });
 }
-
 
 // Mostrar aviso en iPhone
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && /Safari|CriOS/.test(navigator.userAgent);
