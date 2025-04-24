@@ -78,8 +78,7 @@ async function enviarAudio(blob) {
   const formData = new FormData();
   formData.append("audio", blob, "grabacion.wav");
 
-  const thinking = document.getElementById("thinking");
-  if (thinking) thinking.classList.remove("oculto");
+  document.getElementById("thinking").classList.remove("oculto");
 
   try {
     const response = await fetch("/api/audio", {
@@ -91,30 +90,34 @@ async function enviarAudio(blob) {
 
     console.log("📝 Transcripción cruda:", data.transcripcion);
     if (!data.transcripcion || data.transcripcion.trim().length < 3 || data.transcripcion.toLowerCase() === "you") {
-      console.log("❌ Transcripción vacía o irrelevante. No se continúa.");
+      console.log("📭 Transcripción vacía o irrelevante. No se continúa.");
       detenerSolicitado = true;
-      if (thinking) thinking.classList.add("oculto");
+      document.getElementById("thinking").classList.add("oculto");
       return;
     }
 
-    console.log("✅ Mostrando mensaje de usuario:", data.transcripcion);
+    console.log('✅ Mostrando mensaje de usuario:', data.transcripcion);
     agregarMensaje("🗣️ " + data.transcripcion, "usuario");
 
     if (data.respuesta) {
-      if (thinking) thinking.classList.add("oculto");
-      console.log("✅ Mostrando respuesta del bot:", data.respuesta);
+      document.getElementById("thinking").classList.add("oculto");
+      console.log('✅ Mostrando respuesta del bot:', data.respuesta);
       agregarMensaje("🤖 " + data.respuesta, "bot");
     }
 
     if (data.audioUrl) {
       audioRespuesta.src = data.audioUrl;
       audioRespuesta.classList.remove("oculto");
-      console.log("🔊 Reproduciendo audio:", audioRespuesta.src);
+      console.log('🔊 Reproduciendo audio:', audioRespuesta.src);
       audioRespuesta.play();
 
       audioRespuesta.onended = () => {
-        detenerSolicitado = false;
-        hablando = false;
+        if (hablando && !detenerSolicitado) {
+          iniciarGrabacion();
+        } else {
+          detenerSolicitado = false;
+          hablando = false;
+        }
       };
     } else {
       if (hablando && !detenerSolicitado) iniciarGrabacion();
@@ -175,7 +178,7 @@ function encodeWAV(samples) {
   return new Blob([view], { type: "audio/wav" });
 }
 
-// Mostrar aviso iPhone
+// Mostrar aviso en iPhone
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && /Safari|CriOS/.test(navigator.userAgent);
 if (isIOS) {
   const aviso = document.getElementById("iosWarning");
