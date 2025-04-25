@@ -13,12 +13,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function playAudio(url) {
-    new Audio(url).play();
+    const audio = new Audio(url);
+    audio.play().catch(() => {
+      // Autoplay blocked, show controls
+      const audioEl = document.createElement('audio');
+      audioEl.src = url;
+      audioEl.controls = true;
+      audioEl.style.margin = '0.5rem 0';
+      chat.appendChild(audioEl);
+      chat.scrollTop = chat.scrollHeight;
+    });
   }
 
   button.addEventListener('click', async () => {
     if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-      // start recording
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       let mimeType = 'audio/webm';
       if (!MediaRecorder.isTypeSupported(mimeType)) {
@@ -30,28 +38,22 @@ document.addEventListener('DOMContentLoaded', () => {
       mediaRecorder.start();
       button.textContent = '■ Detener';
     } else {
-      // stop recording
       mediaRecorder.onstop = async () => {
-        const mimeType = mediaRecorder.mimeType || 'audio/webm';
-        const blob = new Blob(audioChunks, { type: mimeType });
+        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
         await appendMessage('...', 'user');
-        const ext = mimeType.split('/')[1].split(';')[0];
+        const ext = mediaRecorder.mimeType.split('/')[1].split(';')[0];
         const form = new FormData();
         form.append('audio', blob, `recording.${ext}`);
         thinking.classList.remove('hidden');
         button.disabled = true;
         try {
-          const res = await fetch('/api/audio', {
-            method: 'POST',
-            body: form
-          });
+          const res = await fetch('/api/audio', { method: 'POST', body: form });
           const data = await res.json();
           const lastUser = chat.querySelector('.message.user:last-child');
           if (lastUser) lastUser.textContent = 'Usuario: ' + data.transcripcion;
           await appendMessage(data.respuesta, 'bot');
           playAudio(data.audioUrl);
-        } catch (err) {
-          console.error('Error sending audio:', err);
+        } catch {
           await appendMessage('Lo siento, ocurrió un error.', 'bot');
         } finally {
           thinking.classList.add('hidden');
