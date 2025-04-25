@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
   button.addEventListener('click', async () => {
     if (!mediaRecorder || mediaRecorder.state === 'inactive') {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Choose mimeType for iOS and others
       let mimeType = 'audio/webm';
       if (navigator.userAgent.match(/(iPhone|iPad)/) || !MediaRecorder.isTypeSupported(mimeType)) {
         mimeType = 'audio/mp4';
@@ -39,11 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
       button.textContent = '■ Detener';
     } else {
       mediaRecorder.onstop = async () => {
-        // Create blob without type to preserve actual container
-        const blob = new Blob(audioChunks);
+        // Explicitly set blob type
+        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
         await appendMessage('...', 'user');
-        const blobType = blob.type || mediaRecorder.mimeType;
-        const ext = blobType.split('/')[1].split(';')[0];
+        const ext = mediaRecorder.mimeType.split('/')[1].split(';')[0];
         const form = new FormData();
         form.append('audio', blob, `recording.${ext}`);
         thinking.classList.remove('hidden');
