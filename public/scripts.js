@@ -36,7 +36,7 @@ async function iniciarGrabacion() {
   audioData = [];
   const silenceThreshold = 0.01;
   let silenceDuration = 0;
-  const maxSilence = 5000; // 5 s
+  const maxSilence = 5000; // 5 segundos
 
   processor.onaudioprocess = (e) => {
     const buffer = e.inputBuffer.getChannelData(0);
@@ -46,7 +46,6 @@ async function iniciarGrabacion() {
     if (rms < silenceThreshold) {
       silenceDuration += e.inputBuffer.duration * 1000;
       if (silenceDuration > maxSilence) {
-        // sólo detenemos la grabación; 'hablando' queda true para reiniciar luego
         detenerGrabacion();
       }
     } else {
@@ -77,6 +76,7 @@ async function enviarAudio(blob) {
 
   const formData = new FormData();
   formData.append("audio", blob, "grabacion.wav");
+
   document.getElementById("thinking").classList.remove("oculto");
 
   try {
@@ -122,4 +122,60 @@ async function enviarAudio(blob) {
   }
 }
 
-// rest of mergeBuffers, encodeWAV, iOS warning unchanged...
+function agregarMensaje(texto, clase) {
+  const div = document.createElement("div");
+  div.className = `mensaje ${clase}`;
+  div.innerText = texto;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function mergeBuffers(bufferArray, length) {
+  const result = new Float32Array(bufferArray.length * length);
+  let offset = 0;
+  bufferArray.forEach(data => {
+    result.set(data, offset);
+    offset += data.length;
+  });
+  return result;
+}
+
+function encodeWAV(samples) {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+
+  const writeString = (offset, str) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, 44100, true);
+  view.setUint32(28, 44100 * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, "data");
+  view.setUint32(40, samples.length * 2, true);
+
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++, offset += 2) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+
+  return new Blob([view], { type: "audio/wav" });
+}
+
+// Mostrar aviso en iPhone
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && /Safari|CriOS/.test(navigator.userAgent);
+if (isIOS) {
+  const aviso = document.getElementById("iosWarning");
+  if (aviso) aviso.classList.remove("oculto");
+}
