@@ -67,7 +67,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       {
         model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: 'You are Toscanito, an AI specialist in the Tuscany region of Italy.' },
+          { role: 'system', content: 'You are Toscanito, an AI specialist in the Tuscany region of Italy. Your primary language is Spanish. If the user writes in English (or any other language), respond in that same language; otherwise reply in Spanish.' },
           { role: 'user', content: transcripcion },
         ],
       },
