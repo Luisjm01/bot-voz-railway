@@ -69,6 +69,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
         messages: [
           { role: 'system', content: 'You are Toscanito, an AI specialist in the Tuscany region of Italy.' },
           { role: 'user', content: transcripcion },
+        ],
       },
       {
         headers: {
