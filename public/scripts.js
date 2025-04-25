@@ -47,7 +47,9 @@ async function iniciarGrabacion() {
     if (rms < silenceThreshold) {
       silenceDuration += e.inputBuffer.duration * 1000;
       if (silenceDuration > maxSilence) {
-        detenerGrabacion();
+        detenerSolicitado = true;
+	hablando = false;
+	detenerGrabacion();
       }
     } else {
       silenceDuration = 0;
