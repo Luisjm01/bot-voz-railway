@@ -1,25 +1,26 @@
-
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Toscanito</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div id="app">
-      <header>
-        <h1>Toscanito</h1>
-        <p class="sub">Tu guía encantador de la Toscana 🇮🇹</p>
-      </header>
-      <div class="chat" id="chat"></div>
-      <audio id="audioRespuesta" class="oculto" controls></audio>
-      <div class="controls">
-        <button id="botonPrincipal">🎙️ Hablar</button>
-        <button id="detener" class="oculto">🛑 Detener</button>
-      </div>
-    </div>
-    <script src="scripts.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bot de Voz</title>
+  <!-- Google Fonts Toscana -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="app-title">
+    <div class="title-main">Toscanito</div>
+    <div class="title-sub">Bot de Voz</div>
+  </div>
+    <div id="iosWarning" class="warning oculto">🔈 En iPhone, presiona el botón ▶️ para escuchar la primera respuesta.</div>
+    <div id="chat" class="chatbox"></div>
+    <div id="thinking" class="thinking oculto">🤖 <span class="dots"></span></div>
+    <button id="botonPrincipal" class="main-button">🎙️</button>
+    <button id="detener" class="secundario oculto">⏹️</button>
+    <audio id="audioRespuesta" class="oculto" controls></audio>
+  </div>
+  <script src="scripts.js"></script>
+</body>
 </html>
