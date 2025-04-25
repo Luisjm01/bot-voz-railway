@@ -36,7 +36,7 @@ async function iniciarGrabacion() {
   audioData = [];
   const silenceThreshold = 0.01;
   let silenceDuration = 0;
-  const maxSilence = 5000;
+  const maxSilence = 5000; // tiempo en ms de silencio para cortar
 
   processor.onaudioprocess = (e) => {
     const buffer = e.inputBuffer.getChannelData(0);
@@ -69,4 +69,118 @@ function detenerGrabacion() {
   enviarAudio(wavBlob);
 }
 
-// rest unchanged...
+async function enviarAudio(blob) {
+  if (detenerSolicitado) {
+    console.log("🎤 Grabación ignorada porque se solicitó detener.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("audio", blob, "grabacion.wav");
+
+  document.getElementById("thinking").classList.remove("oculto");
+
+  try {
+    const response = await fetch("/api/audio", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    console.log("📝 Transcripción cruda:", data.transcripcion);
+    if (!data.transcripcion || data.transcripcion.trim().length < 3 || data.transcripcion.toLowerCase() === "you") {
+      console.log("📭 Transcripción vacía o irrelevante. No se continúa.");
+      detenerSolicitado = true;
+      document.getElementById("thinking").classList.add("oculto");
+      return;
+    }
+
+    console.log('✅ Mostrando mensaje de usuario:', data.transcripcion);
+    agregarMensaje("🗣️ " + data.transcripcion, "usuario");
+
+    if (data.respuesta) {
+      document.getElementById("thinking").classList.add("oculto");
+      console.log('✅ Mostrando respuesta del bot:', data.respuesta);
+      agregarMensaje("🤖 " + data.respuesta, "bot");
+    }
+
+    if (data.audioUrl) {
+      audioRespuesta.src = data.audioUrl;
+      audioRespuesta.classList.remove("oculto");
+      console.log('🔊 Reproduciendo audio:', audioRespuesta.src);
+      audioRespuesta.play();
+
+      audioRespuesta.onended = () => {
+        if (hablando && !detenerSolicitado) {
+          iniciarGrabacion();
+        } else {
+          detenerSolicitado = false;
+          hablando = false;
+        }
+      };
+    } else {
+      if (hablando && !detenerSolicitado) iniciarGrabacion();
+    }
+  } catch (err) {
+    agregarMensaje("❌ Error al enviar el audio", "bot");
+  }
+}
+
+function agregarMensaje(texto, clase) {
+  const div = document.createElement("div");
+  div.className = `mensaje ${clase}`;
+  div.innerText = texto;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function mergeBuffers(bufferArray, length) {
+  const result = new Float32Array(bufferArray.length * length);
+  let offset = 0;
+  bufferArray.forEach(data => {
+    result.set(data, offset);
+    offset += data.length;
+  });
+  return result;
+}
+
+function encodeWAV(samples) {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+
+  const writeString = (offset, str) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, 44100, true);
+  view.setUint32(28, 44100 * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, "data");
+  view.setUint32(40, samples.length * 2, true);
+
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++, offset += 2) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+
+  return new Blob([view], { type: "audio/wav" });
+}
+
+// Mostrar aviso en iPhone
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && /Safari|CriOS/.test(navigator.userAgent);
+if (isIOS) {
+  const aviso = document.getElementById("iosWarning");
+  if (aviso) aviso.classList.remove("oculto");
+}
