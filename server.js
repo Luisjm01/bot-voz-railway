@@ -102,12 +102,13 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
      data: {
   text: respuestaTexto,
   model_id: 'eleven_monolingual_v1',
-  pronunciation_dictionary_locators: [
-    {
+ pronunciation_dictionary_locators: process.env.ELEVENLABS_DICTIONARY_VERSION_ID
+  ? [{
       pronunciation_dictionary_id: process.env.ELEVENLABS_DICTIONARY_ID,
-      version_id: process.env.ELEVENLABS_DICTIONARY_VERSION_ID || undefined,
-    }
-  ],
+      version_id: process.env.ELEVENLABS_DICTIONARY_VERSION_ID,
+    }]
+  : [],
+
   voice_settings: {
     stability: 0.5,
     similarity_boost: 0.8
