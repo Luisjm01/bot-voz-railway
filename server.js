@@ -1,4 +1,3 @@
-
 const express = require('express');
 const multer = require('multer');
 const axios = require('axios');
@@ -59,24 +58,32 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     );
 
     const transcripcion = whisperResp.data.text;
-    console.log("📝 Transcripción recibida:", transcripcion);
+    console.log("🗑️ Transcripción recibida:", transcripcion);
 
-// 🚨 Filtro para ignorar mensajes basura
+    // 🚨 Filtro para ignorar mensajes basura
     const palabrasBasura = ["you", "ok", "ah", "eh", "o", "uh"];
     const palabras = transcripcion.trim().toLowerCase().split(/\s+/);
 
     if (palabras.length <= 2 || palabras.some(p => palabrasBasura.includes(p))) {
-    console.log("⚡ Mensaje ignorado por ser muy corto o ruido.");
-    return res.status(200).json({ error: "Transcripción ignorada por ruido." });
-}
+      console.log("⚡️ Mensaje ignorado por ser muy corto o ruido.");
+      return res.status(200).json({ error: "Transcripción ignorada por ruido." });
+    }
 
-
-    console.log("🧠 Solicitando respuesta a GPT...");
+    console.log("🧬 Solicitando respuesta a GPT...");
     const chatResp = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: transcripcion }],
+        messages: [
+          {
+            role: 'system',
+            content: `Eres Toscanito, un asistente de voz experto en Italia, especializado en la región de Toscana y en la ciudad de Roma. 
+Hablas principalmente español, pero si el usuario escribe en inglés (u otro idioma), debes responder en ese idioma. 
+Tu función principal es actuar como guía turístico: recomendar lugares que visitar, restaurantes, platillos típicos, experiencias locales, eventos culturales y consejos prácticos para viajeros. 
+Responde siempre de manera cordial, entusiasta y amigable, como un verdadero experto local que ama compartir secretos de la Toscana y Roma.`,
+          },
+          { role: 'user', content: transcripcion }
+        ],
       },
       {
         headers: {
