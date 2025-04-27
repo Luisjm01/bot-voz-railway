@@ -61,6 +61,16 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     const transcripcion = whisperResp.data.text;
     console.log("📝 Transcripción recibida:", transcripcion);
 
+// 🚨 Filtro para ignorar mensajes basura
+    const palabrasBasura = ["you", "ok", "ah", "eh", "o", "uh"];
+    const palabras = transcripcion.trim().toLowerCase().split(/\s+/);
+
+    if (palabras.length <= 2 || palabras.some(p => palabrasBasura.includes(p))) {
+    console.log("⚡ Mensaje ignorado por ser muy corto o ruido.");
+    return res.status(200).json({ error: "Transcripción ignorada por ruido." });
+}
+
+
     console.log("🧠 Solicitando respuesta a GPT...");
     const chatResp = await axios.post(
       'https://api.openai.com/v1/chat/completions',
