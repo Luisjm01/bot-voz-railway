@@ -1,3 +1,4 @@
+// server.js corregido para manejo elegante del diccionario
 
 const express = require('express');
 const multer = require('multer');
@@ -28,7 +29,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/audio', upload.single('audio'), async (req, res) => {
-  console.log("📥 POST /api/audio recibido");
+  console.log("\ud83d\udce5 POST /api/audio recibido");
 
   const voiceId = process.env.ELEVENLABS_VOICE_ID;
   const audioBuffer = req.file?.buffer;
@@ -38,7 +39,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
   }
 
   try {
-    console.log("🔁 Enviando audio a Whisper...");
+    console.log("\ud83d\udd01 Enviando audio a Whisper...");
     const formData = new FormData();
     formData.append('file', audioBuffer, {
       filename: 'grabacion.webm',
@@ -59,9 +60,9 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     );
 
     const transcripcion = whisperResp.data.text;
-    console.log("📝 Transcripción recibida:", transcripcion);
+    console.log("\ud83d\udcdd Transcripción recibida:", transcripcion);
 
-    console.log("🧠 Solicitando respuesta a GPT...");
+    console.log("\ud83e\uddec Solicitando respuesta a GPT...");
     const chatResp = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
@@ -79,9 +80,9 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
     );
 
     const respuestaTexto = chatResp.data.choices[0].message.content;
-    console.log("✅ Respuesta GPT:", respuestaTexto);
+    console.log("\u2705 Respuesta GPT:", respuestaTexto);
 
-    console.log("💾 Guardando en Supabase...");
+    console.log("\ud83d\udcbe Guardando en Supabase...");
     await supabase.from('memoria').insert([
       {
         user_id: 'default',
@@ -90,7 +91,26 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       },
     ]);
 
-    console.log("🔊 Generando audio en ElevenLabs...");
+    console.log("\ud83d\udd0a Generando audio en ElevenLabs...");
+
+    // Preparar datos para ElevenLabs
+    const data = {
+      text: respuestaTexto,
+      model_id: 'eleven_turbo_v2',
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.8
+      }
+    };
+
+    // Si existe diccionario aprobado, añadirlo
+    if (process.env.ELEVENLABS_DICTIONARY_ID && process.env.ELEVENLABS_DICTIONARY_VERSION_ID) {
+      data.pronunciation_dictionary_locators = [{
+        pronunciation_dictionary_id: process.env.ELEVENLABS_DICTIONARY_ID,
+        version_id: process.env.ELEVENLABS_DICTIONARY_VERSION_ID
+      }];
+    }
+
     const audioResp = await axios({
       method: 'POST',
       url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
@@ -99,21 +119,7 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
         'Content-Type': 'application/json',
         'Accept': 'audio/mpeg'
       },
-     data: {
-  text: respuestaTexto,
-  model_id: 'eleven_turbo_v2',
- // pronunciation_dictionary_locators: process.env.ELEVENLABS_DICTIONARY_VERSION_ID
- // ? [{
- //     pronunciation_dictionary_id: process.env.ELEVENLABS_DICTIONARY_ID,
- //     version_id: process.env.ELEVENLABS_DICTIONARY_VERSION_ID,
- //   }]
- // : [],
-
-  voice_settings: {
-    stability: 0.5,
-    similarity_boost: 0.8
-  }
-},
+      data,
       responseType: 'arraybuffer'
     });
 
@@ -126,12 +132,13 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       transcripcion,
       respuesta: respuestaTexto
     });
+
   } catch (error) {
-    console.error("❌ Error procesando audio:", error.response?.data || error.message);
+    console.error("\u274c Error procesando audio:", error.response?.data || error.message);
     res.status(500).json({ error: 'Error procesando el audio.' });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`\ud83d\ude80 Servidor corriendo en http://localhost:${PORT}`);
 });
