@@ -95,18 +95,24 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       method: 'POST',
       url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       headers: {
-        'xi-api-key': process.env.ELEVEN_API_KEY,
+        'xi-api-key': process.env.ELEVENLABS_API_KEY,
         'Content-Type': 'application/json',
         'Accept': 'audio/mpeg'
       },
-      data: {
-        text: respuestaTexto,
-        model_id: 'eleven_monolingual_v1',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.8
-        }
-      },
+     data: {
+  text: respuestaTexto,
+  model_id: 'eleven_monolingual_v1',
+  pronunciation_dictionary_locators: [
+    {
+      pronunciation_dictionary_id: process.env.ELEVENLABS_DICTIONARY_ID,
+      version_id: process.env.ELEVENLABS_DICTIONARY_VERSION_ID || undefined,
+    }
+  ],
+  voice_settings: {
+    stability: 0.5,
+    similarity_boost: 0.8
+  }
+},
       responseType: 'arraybuffer'
     });
 
